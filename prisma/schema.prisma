@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  name   String
+  cardId String?
+
+  Order Order[]
+}
+
+model Order {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  name    String?
+  orderId String? @default(dbgenerated())
+
+  tableId Int?
+  Table   Table? @relation(references: [id], fields: [tableId])
+
+  additional_notes String?
+
+  customerId Int?
+  Customer   Customer? @relation(references: [id], fields: [customerId])
+}
+
+model Item {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  name        String
+  description String @db.Text
+  price       Int
+  discount    Int?
+
+
+  Categories Item_Category[]
+  Images     Item_Image[]
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  name        String
+  description String          @db.Text
+  imageUrl    String
+  Items       Item_Category[]
+}
+
+//! Conjunction
+model Item_Category {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  itemId     Int
+  categoryId Int
+
+  Item     Item     @relation(references: [id], fields: [itemId])
+  Category Category @relation(references: [id], fields: [categoryId])
+}
+
+model Image {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  imageUrl     String? @db.Text
+  imagePath    String? @db.Text
+  imageDecoded String? @db.Text
+
+  Items Item_Image[]
+}
+
+model Item_Image {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  itemId  Int
+  imageId Int
+
+  Item  Item  @relation(references: [id], fields: [itemId])
+  Image Image @relation(references: [id], fields: [imageId])
+}
+
+model Table {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  name String?
+  no   String
+
+  code  String
+  Order Order[]
+}
+
+model Variant {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  name             String
+  description      String?
+  Variant_Variable Variant_Variable[]
+}
+
+model Variant_Variable {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  name String?
+
+  variantId Int
+  Variant   Variant @relation(references: [id], fields: [variantId])
+}
